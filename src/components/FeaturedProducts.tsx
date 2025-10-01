@@ -16,13 +16,13 @@ const FeaturedProducts = () => {
         `)
         .eq("featured", true)
         .order("created_at", { ascending: false })
-        .limit(4);
+        .limit(15);
 
       if (error) throw error;
       
       return data.map((product: any) => ({
         ...product,
-        image: product.product_images?.[0]?.url || "/placeholder.svg",
+        image: product.product_images?.[0]?.url || "boat-1.jpg",
       }));
     },
   });
@@ -31,8 +31,8 @@ const FeaturedProducts = () => {
     return (
       <section className="py-24 bg-gradient-to-b from-background to-secondary/20">
         <div className="container mx-auto px-4">
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {[1, 2, 3, 4].map((i) => (
+        <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
               <div key={i} className="animate-pulse">
                 <div className="bg-muted rounded-lg h-64 mb-4" />
                 <div className="bg-muted rounded h-4 w-3/4 mb-2" />
@@ -63,7 +63,7 @@ const FeaturedProducts = () => {
         </div>
 
         {/* Products Grid */}
-        <div className="mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {products?.map((product: any) => (
             <ProductCard
               key={product.id}

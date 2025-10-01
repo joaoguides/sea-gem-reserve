@@ -10,24 +10,41 @@ const Navigation = () => {
       <div className="container mx-auto px-4">
         <div className="flex h-20 items-center justify-between">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-primary-light">
+          <a href="/" className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center">
               <svg
-                viewBox="0 0 24 24"
+                viewBox="0 0 120 40"
                 fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                className="h-7 w-7 text-primary-foreground"
+                className="h-10 w-auto"
               >
-                <path d="M2 12L7 17L12 12L17 17L22 12" />
-                <path d="M2 12V6L12 2L22 6V12" />
+                <path 
+                  d="M10 20 L30 8 L50 20 L70 8 L90 20" 
+                  stroke="currentColor" 
+                  strokeWidth="2.5" 
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-primary"
+                />
+                <path 
+                  d="M10 24 L30 12 L50 24 L70 12 L90 24" 
+                  stroke="currentColor" 
+                  strokeWidth="1.8" 
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-primary/60"
+                  opacity="0.7"
+                />
               </svg>
             </div>
             <div className="flex flex-col">
-              <span className="text-lg font-bold tracking-tight text-foreground">Luxury Boats</span>
-              <span className="text-xs text-muted-foreground">Embarcações Premium</span>
+              <span className="text-xl font-light tracking-[0.2em] text-foreground uppercase" style={{ fontFamily: 'system-ui, -apple-system, sans-serif', letterSpacing: '0.3em' }}>
+                AZURE
+              </span>
+              <span className="text-[9px] text-muted-foreground tracking-[0.15em] uppercase -mt-0.5" style={{ letterSpacing: '0.25em' }}>
+                Yachts Brasil
+              </span>
             </div>
-          </div>
+          </a>
 
           {/* Desktop Menu */}
           <div className="hidden items-center gap-8 md:flex">
@@ -43,7 +60,7 @@ const Navigation = () => {
             <a href="/blog" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
               Blog
             </a>
-            <a href="#agendar" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
+            <a href="/agendar-visita" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
               Agendar Visita
             </a>
           </div>

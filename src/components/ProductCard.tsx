@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { useFavorites } from "@/hooks/useFavorites";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
+import { getProductImage } from "@/lib/productImages";
 
 interface ProductCardProps {
   id: string;
@@ -73,9 +74,10 @@ const ProductCard = ({
       {/* Image Container */}
       <div className="relative aspect-[4/3] overflow-hidden">
         <img
-          src={image}
+          src={getProductImage(image)}
           alt={title}
           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+          loading="lazy"
         />
         
         {/* Badges */}
