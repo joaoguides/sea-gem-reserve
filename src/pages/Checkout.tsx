@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,6 +45,11 @@ const Checkout = () => {
     0
   );
 
+  const [customerData, setCustomerData] = useState({
+    name: user?.user_metadata?.full_name || "",
+    phone: "",
+  });
+
   const handleCheckout = async () => {
     if (!acceptedTerms) {
       toast({
@@ -56,66 +60,41 @@ const Checkout = () => {
       return;
     }
 
+    if (!customerData.phone) {
+      toast({
+        title: "Atenção",
+        description: "Por favor, informe seu telefone",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Create order
-      const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-          user_id: user.id,
-          total,
-          status: "pending",
-          payment_method: paymentMethod,
-        })
-        .select()
-        .single();
+      const { data, error } = await supabase.functions.invoke('create-checkout-session', {
+        body: {
+          cartItems,
+          paymentMethod,
+          customerData: {
+            name: customerData.name,
+            email: user.email,
+            phone: customerData.phone,
+          },
+        },
+      });
 
-      if (orderError) throw orderError;
+      if (error) throw error;
 
-      // Create order items
-      const orderItems = cartItems.map((item) => ({
-        order_id: order.id,
-        item_type: item.type,
-        ref_id: item.type === "reservation" ? item.product_id : item.id,
-        qty: item.quantity || 1,
-        price: item.price,
-      }));
-
-      const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-      if (itemsError) throw itemsError;
-
-      // Create reservations if any
-      const reservations = cartItems
-        .filter((item) => item.type === "reservation")
-        .map((item) => ({
-          user_id: user.id,
-          product_id: item.product_id,
-          mode: item.mode,
-          amount: item.price,
-          status: "pending",
-        }));
-
-      if (reservations.length > 0) {
-        const { error: resError } = await supabase
-          .from("reservations")
-          .insert(reservations);
-
-        if (resError) throw resError;
+      if (!data?.checkoutUrl) {
+        throw new Error('Erro ao criar sessão de pagamento');
       }
 
       // Clear cart
       localStorage.removeItem("cart");
 
-      toast({
-        title: "Pedido criado!",
-        description: "Seu pedido foi criado com sucesso. Aguardando pagamento.",
-      });
-
-      navigate(`/checkout/sucesso?order_id=${order.id}`);
+      // Redirect to Mercado Pago
+      window.location.href = data.checkoutUrl;
     } catch (error: any) {
       console.error("Checkout error:", error);
       toast({
@@ -123,7 +102,6 @@ const Checkout = () => {
         description: error.message || "Erro ao processar pedido",
         variant: "destructive",
       });
-    } finally {
       setLoading(false);
     }
   };
@@ -150,15 +128,23 @@ const Checkout = () => {
                 <CardContent className="space-y-4">
                   <div>
                     <Label>Nome</Label>
-                    <Input defaultValue={user.user_metadata?.full_name || ""} />
+                    <Input 
+                      value={customerData.name}
+                      onChange={(e) => setCustomerData({ ...customerData, name: e.target.value })}
+                    />
                   </div>
                   <div>
                     <Label>E-mail</Label>
-                    <Input defaultValue={user.email} disabled />
+                    <Input value={user.email} disabled />
                   </div>
                   <div>
-                    <Label>Telefone</Label>
-                    <Input placeholder="(00) 00000-0000" />
+                    <Label>Telefone *</Label>
+                    <Input 
+                      placeholder="(00) 00000-0000"
+                      value={customerData.phone}
+                      onChange={(e) => setCustomerData({ ...customerData, phone: e.target.value })}
+                      required
+                    />
                   </div>
                 </CardContent>
               </Card>
