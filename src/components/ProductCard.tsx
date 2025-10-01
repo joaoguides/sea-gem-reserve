@@ -117,7 +117,7 @@ const ProductCard = ({
         {/* Quick View Button */}
         <Button
           variant="secondary"
-          onClick={() => navigate(`/produto/${slug || id}`)}
+          onClick={() => navigate(`/produtos/${slug || id}`)}
           className="absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-4 bg-background text-foreground opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
         >
           Ver Detalhes

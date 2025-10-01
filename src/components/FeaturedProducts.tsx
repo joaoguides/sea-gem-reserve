@@ -68,6 +68,7 @@ const FeaturedProducts = () => {
             <ProductCard
               key={product.id}
               id={product.id}
+              slug={product.slug}
               image={product.image}
               title={product.name}
               price={product.price}
