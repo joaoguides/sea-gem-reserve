@@ -28,15 +28,17 @@ const Produto = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [showReservaModal, setShowReservaModal] = useState(false);
   const [isFavorited, setIsFavorited] = useState(false);
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ id: string; email?: string } | null>(null);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      setUser(user);
+    supabase.auth.getUser().then(({ data: { user: authUser } }) => {
+      if (authUser) {
+        setUser({ id: authUser.id, email: authUser.email });
+      }
     });
   }, []);
 
-  const { data: product, isLoading } = useQuery({
+  const { data: product, isLoading } = useQuery<Product>({
     queryKey: ["product", slug],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -50,20 +52,18 @@ const Produto = () => {
         .single();
 
       if (error) throw error;
-      return data;
+      return data as Product;
     },
   });
 
-  // Check if favorited
   useEffect(() => {
     if (user && product) {
-      // @ts-ignore
       supabase
         .from("favorites")
         .select("id")
         .eq("user_id", user.id)
         .eq("product_id", product.id)
-        .single()
+        .maybeSingle()
         .then(({ data }) => {
           setIsFavorited(!!data);
         });
@@ -71,7 +71,7 @@ const Produto = () => {
   }, [user, product]);
 
   const toggleFavorite = async () => {
-    if (!user) {
+    if (!user || !product) {
       toast({
         title: "Login necessário",
         description: "Você precisa estar logado para favoritar",
@@ -80,22 +80,28 @@ const Produto = () => {
       return;
     }
 
-    if (isFavorited) {
-      // @ts-ignore
-      await supabase
-        .from("favorites")
-        .delete()
-        .eq("user_id", user.id)
-        .eq("product_id", product.id);
-      setIsFavorited(false);
-      toast({ title: "Removido dos favoritos" });
-    } else {
-      // @ts-ignore
-      await supabase
-        .from("favorites")
-        .insert({ user_id: user.id, product_id: product.id });
-      setIsFavorited(true);
-      toast({ title: "Adicionado aos favoritos" });
+    try {
+      if (isFavorited) {
+        await supabase
+          .from("favorites")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("product_id", product.id);
+        setIsFavorited(false);
+        toast({ title: "Removido dos favoritos" });
+      } else {
+        await supabase
+          .from("favorites")
+          .insert({ user_id: user.id, product_id: product.id });
+        setIsFavorited(true);
+        toast({ title: "Adicionado aos favoritos" });
+      }
+    } catch (error) {
+      toast({
+        title: "Erro",
+        description: "Não foi possível atualizar favoritos",
+        variant: "destructive",
+      });
     }
   };
 
@@ -123,7 +129,7 @@ const Produto = () => {
     );
   }
 
-  const images = product.product_images?.sort((a: any, b: any) => a.sort - b.sort) || [];
+  const images = product.product_images?.sort((a, b) => (a.sort || 0) - (b.sort || 0)) || [];
   const features = product.product_features || [];
 
   return (
@@ -159,7 +165,7 @@ const Produto = () => {
               </div>
               
               <div className="grid grid-cols-4 gap-2">
-                {images.map((img: any, idx: number) => (
+                {images.map((img, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(idx)}
@@ -358,16 +364,17 @@ const Produto = () => {
                   {features.length > 0 ? (
                     <div className="space-y-6">
                       {Object.entries(
-                        features.reduce((acc: any, feat: any) => {
-                          if (!acc[feat.group]) acc[feat.group] = [];
-                          acc[feat.group].push(feat.label);
+                        features.reduce<Record<string, string[]>>((acc, feat) => {
+                          const groupName = feat.group_name || 'Outros';
+                          if (!acc[groupName]) acc[groupName] = [];
+                          if (feat.label) acc[groupName].push(feat.label);
                           return acc;
                         }, {})
-                      ).map(([group, items]: [string, any]) => (
+                      ).map(([group, items]) => (
                         <div key={group}>
                           <h3 className="font-semibold mb-3">{group}</h3>
                           <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {items.map((item: string, idx: number) => (
+                            {items.map((item, idx) => (
                               <li key={idx} className="flex items-center gap-2">
                                 <div className="h-1.5 w-1.5 rounded-full bg-primary" />
                                 <span>{item}</span>

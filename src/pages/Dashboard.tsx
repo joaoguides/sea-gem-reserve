@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
@@ -11,29 +11,24 @@ import { ProductList } from "@/components/admin/ProductList";
 import { OrdersList } from "@/components/admin/OrdersList";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Package, ShoppingCart, FileText } from "lucide-react";
+import type { Database } from "@/integrations/supabase/types";
+
+type Product = Database['public']['Tables']['products']['Row'];
+type ProductInsert = Database['public']['Tables']['products']['Insert'];
+type Order = Database['public']['Tables']['orders']['Row'];
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
-  const [products, setProducts] = useState<any[]>([]);
-  const [orders, setOrders] = useState<any[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [stats, setStats] = useState({ products: 0, orders: 0, revenue: 0 });
   const [showProductForm, setShowProductForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  useEffect(() => {
-    checkAuth();
-  }, [navigate]);
-
-  useEffect(() => {
-    if (isAdmin) {
-      loadData();
-    }
-  }, [isAdmin]);
-
-  const checkAuth = async () => {
+  const checkAuth = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       navigate("/login");
@@ -52,10 +47,9 @@ const Dashboard = () => {
       setIsAdmin(true);
     }
     setLoading(false);
-  };
+  }, [navigate]);
 
-  const loadData = async () => {
-    // Load products
+  const loadData = useCallback(async () => {
     const { data: productsData } = await supabase
       .from("products")
       .select("*")
@@ -63,23 +57,31 @@ const Dashboard = () => {
 
     if (productsData) setProducts(productsData);
 
-    // Load orders with profiles
     const { data: ordersData } = await supabase
       .from("orders")
-      .select("*, profiles(full_name, phone)")
+      .select("*")
       .order("created_at", { ascending: false });
 
     if (ordersData) setOrders(ordersData);
 
-    // Calculate stats
     const productCount = productsData?.length || 0;
     const orderCount = ordersData?.length || 0;
     const revenue = ordersData?.reduce((sum, order) => sum + Number(order.total_amount), 0) || 0;
 
     setStats({ products: productCount, orders: orderCount, revenue });
-  };
+  }, []);
 
-  const handleSaveProduct = async (data: any) => {
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    if (isAdmin) {
+      loadData();
+    }
+  }, [isAdmin, loadData]);
+
+  const handleSaveProduct = async (data: ProductInsert) => {
     try {
       if (editingProduct) {
         const { error } = await supabase
@@ -103,10 +105,10 @@ const Dashboard = () => {
       setShowProductForm(false);
       setEditingProduct(null);
       loadData();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Erro",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Erro desconhecido",
         variant: "destructive",
       });
     }
@@ -123,16 +125,16 @@ const Dashboard = () => {
 
       toast({ title: "Produto excluído com sucesso!" });
       loadData();
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Erro",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Erro desconhecido",
         variant: "destructive",
       });
     }
   };
 
-  const handleEditProduct = (product: any) => {
+  const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setShowProductForm(true);
   };

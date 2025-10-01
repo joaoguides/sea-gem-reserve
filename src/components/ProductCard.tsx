@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, Gauge, Heart, Ruler } from "lucide-react";
+import { Calendar, Gauge, Heart, Ruler, ShoppingCart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useFavorites } from "@/hooks/useFavorites";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 
 interface ProductCardProps {
   id: string;
+  slug?: string;
   image: string;
   title: string;
   price: number | string;
@@ -16,10 +18,14 @@ interface ProductCardProps {
   motorization: string;
   badge?: string;
   isNew?: boolean;
+  deposit_mode?: string;
+  deposit_fixed_amount?: number;
+  deposit_percent?: number;
 }
 
 const ProductCard = ({
   id,
+  slug,
   image,
   title,
   price,
@@ -29,9 +35,38 @@ const ProductCard = ({
   motorization,
   badge,
   isNew = false,
+  deposit_mode = "fixed",
+  deposit_fixed_amount = 0,
+  deposit_percent = 0,
 }: ProductCardProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { isFavorite, isLoading, toggleFavorite } = useFavorites(id);
+  
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const depositAmount = deposit_mode === "fixed" 
+      ? deposit_fixed_amount
+      : (typeof price === 'number' ? price : parseFloat(String(price).replace(/[^0-9.]/g, ''))) * (deposit_percent / 100);
+    
+    cart.push({
+      type: "reservation",
+      id,
+      name: title,
+      price: depositAmount,
+      mode: deposit_mode,
+      product_id: id,
+    });
+    
+    localStorage.setItem("cart", JSON.stringify(cart));
+    
+    toast({
+      title: "Adicionado ao carrinho",
+      description: `Sinal de ${title} adicionado`,
+    });
+  };
   
   return (
     <div className="group relative overflow-hidden rounded-2xl bg-card shadow-luxury transition-all hover:shadow-luxury-xl">
@@ -80,7 +115,7 @@ const ProductCard = ({
         {/* Quick View Button */}
         <Button
           variant="secondary"
-          onClick={() => navigate(`/produtos/${id}`)}
+          onClick={() => navigate(`/produto/${slug || id}`)}
           className="absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-4 bg-background text-foreground opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
         >
           Ver Detalhes
@@ -123,7 +158,11 @@ const ProductCard = ({
               {typeof price === 'number' ? `R$ ${price.toLocaleString('pt-BR')}` : price}
             </p>
           </div>
-          <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button 
+            onClick={handleAddToCart}
+            className="bg-accent text-accent-foreground hover:bg-accent/90"
+          >
+            <ShoppingCart className="mr-2 h-4 w-4" />
             Reservar
           </Button>
         </div>

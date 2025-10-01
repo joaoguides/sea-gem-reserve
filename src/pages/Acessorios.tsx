@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
@@ -10,13 +9,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ShoppingCart, Search } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import type { Database } from "@/integrations/supabase/types";
+
+type Accessory = Database['public']['Tables']['accessories']['Row'];
 
 const Acessorios = () => {
   const { toast } = useToast();
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("name");
 
-  const { data: accessories, isLoading } = useQuery({
+  const { data: accessories, isLoading } = useQuery<Accessory[]>({
     queryKey: ["accessories", search, sortBy],
     queryFn: async () => {
       let query = supabase.from("accessories").select("*");
@@ -38,11 +40,11 @@ const Acessorios = () => {
 
       const { data, error } = await query;
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
-  const addToCart = (accessory: any) => {
+  const addToCart = (accessory: Accessory) => {
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
     cart.push({
       type: "accessory",
@@ -108,7 +110,7 @@ const Acessorios = () => {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-              {accessories?.map((accessory: any) => (
+              {accessories?.map((accessory) => (
                 <Card key={accessory.id}>
                   <CardContent className="p-6">
                     <div className="aspect-square bg-muted rounded-lg mb-4 flex items-center justify-center">

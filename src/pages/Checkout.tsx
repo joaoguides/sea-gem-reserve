@@ -11,18 +11,26 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CreditCard, QrCode } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface CartItem {
+  type: "accessory" | "reservation";
+  id: string;
+  name: string;
+  price: number;
+  quantity?: number;
+}
+
 const Checkout = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [user, setUser] = useState<any>(null);
-  const [cartItems, setCartItems] = useState<any[]>([]);
+  const [user, setUser] = useState<{ id: string; email?: string; user_metadata?: { full_name?: string } } | null>(null);
+  const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "card">("pix");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!user) {
+    supabase.auth.getUser().then(({ data: { user: authUser } }) => {
+      if (!authUser) {
         toast({
           title: "Login necessário",
           description: "Você precisa estar logado para finalizar a compra",
@@ -30,13 +38,17 @@ const Checkout = () => {
         });
         navigate("/login");
       } else {
-        setUser(user);
+        setUser({
+          id: authUser.id,
+          email: authUser.email,
+          user_metadata: authUser.user_metadata
+        });
       }
     });
 
     const saved = localStorage.getItem("cart");
     if (saved) {
-      setCartItems(JSON.parse(saved));
+      setCartItems(JSON.parse(saved) as CartItem[]);
     }
   }, [navigate, toast]);
 
@@ -49,6 +61,11 @@ const Checkout = () => {
     name: user?.user_metadata?.full_name || "",
     phone: "",
   });
+
+  const validateBrazilianPhone = (phone: string): boolean => {
+    const cleaned = phone.replace(/\D/g, '');
+    return cleaned.length === 10 || cleaned.length === 11;
+  };
 
   const handleCheckout = async () => {
     if (!acceptedTerms) {
@@ -64,6 +81,15 @@ const Checkout = () => {
       toast({
         title: "Atenção",
         description: "Por favor, informe seu telefone",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!validateBrazilianPhone(customerData.phone)) {
+      toast({
+        title: "Telefone inválido",
+        description: "Por favor, informe um telefone brasileiro válido com DDD",
         variant: "destructive",
       });
       return;
@@ -95,11 +121,11 @@ const Checkout = () => {
 
       // Redirect to Mercado Pago
       window.location.href = data.checkoutUrl;
-    } catch (error: any) {
+    } catch (error) {
       console.error("Checkout error:", error);
       toast({
         title: "Erro",
-        description: error.message || "Erro ao processar pedido",
+        description: error instanceof Error ? error.message : "Erro ao processar pedido",
         variant: "destructive",
       });
       setLoading(false);
