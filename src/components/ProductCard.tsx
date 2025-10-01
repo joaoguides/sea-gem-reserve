@@ -2,6 +2,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Gauge, Heart, Ruler } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useFavorites } from "@/hooks/useFavorites";
+import { cn } from "@/lib/utils";
 
 interface ProductCardProps {
   id: string;
@@ -29,6 +31,7 @@ const ProductCard = ({
   isNew = false,
 }: ProductCardProps) => {
   const navigate = useNavigate();
+  const { isFavorite, isLoading, toggleFavorite } = useFavorites(id);
   
   return (
     <div className="group relative overflow-hidden rounded-2xl bg-card shadow-luxury transition-all hover:shadow-luxury-xl">
@@ -58,9 +61,17 @@ const ProductCard = ({
         <Button
           size="icon"
           variant="secondary"
-          className="absolute right-4 top-4 h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background"
+          className={cn(
+            "absolute right-4 top-4 h-10 w-10 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background",
+            isFavorite && "text-red-500"
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            toggleFavorite();
+          }}
+          disabled={isLoading}
         >
-          <Heart className="h-5 w-5" />
+          <Heart className={cn("h-5 w-5", isFavorite && "fill-current")} />
         </Button>
 
         {/* Overlay on Hover */}

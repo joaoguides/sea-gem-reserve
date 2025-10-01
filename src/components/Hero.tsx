@@ -2,8 +2,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, Play } from "lucide-react";
 import heroImage from "@/assets/hero-boat.jpg";
 import SearchBar from "./SearchBar";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
   return (
     <section className="relative min-h-[90vh] w-full overflow-hidden">
       {/* Background Image with Overlay */}
@@ -39,7 +42,11 @@ const Hero = () => {
 
           {/* CTA Buttons */}
           <div className="mb-12 flex flex-col gap-4 sm:flex-row animate-fade-in">
-            <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-luxury">
+            <Button 
+              size="lg" 
+              className="bg-accent text-accent-foreground hover:bg-accent/90 shadow-luxury"
+              onClick={() => navigate("/produtos")}
+            >
               Ver Modelos
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
@@ -47,6 +54,7 @@ const Hero = () => {
               size="lg"
               variant="outline"
               className="border-background/40 bg-background/10 text-background backdrop-blur-sm hover:bg-background/20"
+              onClick={() => window.open("https://www.youtube.com/watch?v=dQw4w9WgXcQ", "_blank")}
             >
               <Play className="mr-2 h-5 w-5" />
               Assistir Vídeo
