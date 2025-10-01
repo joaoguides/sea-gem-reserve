@@ -13,14 +13,24 @@ import {
   Heart, Share2, Download, Calendar, MessageCircle, 
   Anchor, Gauge, Fuel, Users, Ruler, Waves 
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReservaModal from "@/components/ReservaModal";
 import type { Product } from "@/types/database";
+import { useToast } from "@/hooks/use-toast";
 
 const Produto = () => {
   const { slug } = useParams();
+  const { toast } = useToast();
   const [selectedImage, setSelectedImage] = useState(0);
   const [showReservaModal, setShowReservaModal] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+  }, []);
 
   const { data: product, isLoading } = useQuery<Product>({
     // @ts-ignore - Types will be available after migration is executed
@@ -41,6 +51,51 @@ const Produto = () => {
       return data;
     },
   });
+
+  // Check if favorited
+  useEffect(() => {
+    if (user && product) {
+      // @ts-ignore
+      supabase
+        .from("favorites")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("product_id", product.id)
+        .single()
+        .then(({ data }) => {
+          setIsFavorited(!!data);
+        });
+    }
+  }, [user, product]);
+
+  const toggleFavorite = async () => {
+    if (!user) {
+      toast({
+        title: "Login necessário",
+        description: "Você precisa estar logado para favoritar",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (isFavorited) {
+      // @ts-ignore
+      await supabase
+        .from("favorites")
+        .delete()
+        .eq("user_id", user.id)
+        .eq("product_id", product.id);
+      setIsFavorited(false);
+      toast({ title: "Removido dos favoritos" });
+    } else {
+      // @ts-ignore
+      await supabase
+        .from("favorites")
+        .insert({ user_id: user.id, product_id: product.id });
+      setIsFavorited(true);
+      toast({ title: "Adicionado aos favoritos" });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -129,8 +184,13 @@ const Produto = () => {
                   <p className="text-muted-foreground">{product.location}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button variant="outline" size="icon">
-                    <Heart className="h-4 w-4" />
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={toggleFavorite}
+                    className={isFavorited ? "text-red-500" : ""}
+                  >
+                    <Heart className={`h-4 w-4 ${isFavorited ? "fill-current" : ""}`} />
                   </Button>
                   <Button variant="outline" size="icon">
                     <Share2 className="h-4 w-4" />

@@ -38,21 +38,25 @@ const ReservaModal = ({ product, onClose }: ReservaModalProps) => {
       return;
     }
 
-    // Aqui você implementaria a integração com Mercado Pago
+    // Add to cart
+    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    cart.push({
+      type: "reservation",
+      id: product.id,
+      name: product.name,
+      price: calculatedAmount,
+      mode,
+      product_id: product.id,
+    });
+    localStorage.setItem("cart", JSON.stringify(cart));
+
     toast({
-      title: "Reserva iniciada",
-      description: "Redirecionando para o pagamento...",
+      title: "Reserva adicionada ao carrinho",
+      description: "Finalize sua compra no carrinho",
     });
 
-    // Por enquanto, apenas navega para uma página de checkout
-    navigate("/checkout", {
-      state: {
-        product,
-        mode,
-        amount: calculatedAmount,
-        paymentMethod,
-      },
-    });
+    onClose();
+    navigate("/carrinho");
   };
 
   return (

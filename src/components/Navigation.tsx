@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Menu, Phone, Search, User } from "lucide-react";
+import { Menu, Phone, Search, User, Heart, ShoppingCart } from "lucide-react";
 import { useState } from "react";
 
 const Navigation = () => {
@@ -37,20 +37,26 @@ const Navigation = () => {
             <a href="/produtos" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
               Catálogo
             </a>
-            <a href="#seminovos" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
-              Seminovos
+            <a href="/acessorios" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
+              Acessórios
             </a>
-            <a href="#sobre" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
-              Sobre
+            <a href="/blog" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
+              Blog
+            </a>
+            <a href="#agendar" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
+              Agendar Visita
             </a>
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden items-center gap-3 md:flex">
-            <Button variant="ghost" size="icon" className="text-foreground">
-              <Search className="h-5 w-5" />
+            <Button variant="ghost" size="icon" className="text-foreground" onClick={() => window.location.href = '/favoritos'}>
+              <Heart className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-foreground" onClick={() => window.location.href = '/login'}>
+            <Button variant="ghost" size="icon" className="text-foreground" onClick={() => window.location.href = '/carrinho'}>
+              <ShoppingCart className="h-5 w-5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="text-foreground" onClick={() => window.location.href = '/conta'}>
               <User className="h-5 w-5" />
             </Button>
             <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
@@ -80,11 +86,17 @@ const Navigation = () => {
               <a href="/produtos" className="text-sm font-medium text-foreground">
                 Catálogo
               </a>
-              <a href="#seminovos" className="text-sm font-medium text-foreground">
-                Seminovos
+              <a href="/acessorios" className="text-sm font-medium text-foreground">
+                Acessórios
               </a>
-              <a href="#sobre" className="text-sm font-medium text-foreground">
-                Sobre
+              <a href="/favoritos" className="text-sm font-medium text-foreground">
+                Favoritos
+              </a>
+              <a href="/carrinho" className="text-sm font-medium text-foreground">
+                Carrinho
+              </a>
+              <a href="/conta" className="text-sm font-medium text-foreground">
+                Minha Conta
               </a>
               <Button className="mt-2 w-full bg-accent text-accent-foreground hover:bg-accent/90">
                 <Phone className="mr-2 h-4 w-4" />

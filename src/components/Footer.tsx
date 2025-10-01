@@ -52,28 +52,28 @@ const Footer = () => {
             </h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                  Lanchas Novas
+                <a href="/produtos?type=lancha" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Lanchas
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                  Veleiros Premium
+                <a href="/produtos?type=veleiro" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Veleiros
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                <a href="/produtos?type=jetski" className="text-sm text-muted-foreground transition-colors hover:text-primary">
                   Jet Skis
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                  Seminovos Certificados
+                <a href="/produtos?status=seminovo" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Seminovos
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                  Acessórios Náuticos
+                <a href="/acessorios" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Acessórios
                 </a>
               </li>
             </ul>
@@ -86,28 +86,28 @@ const Footer = () => {
             </h3>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                  Central de Ajuda
+                <a href="/faq" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Perguntas Frequentes
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                  Financiamento
+                <a href="/politica-de-reserva" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Política de Reserva
                 </a>
               </li>
               <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                  Garantia & Assistência
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                  Política de Privacidade
-                </a>
-              </li>
-              <li>
-                <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                <a href="/termos" className="text-sm text-muted-foreground transition-colors hover:text-primary">
                   Termos de Uso
+                </a>
+              </li>
+              <li>
+                <a href="#contato" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Contato
+                </a>
+              </li>
+              <li>
+                <a href="/conta" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                  Minha Conta
                 </a>
               </li>
             </ul>
@@ -158,14 +158,14 @@ const Footer = () => {
               © 2025 Luxury Boats. Todos os direitos reservados.
             </p>
             <div className="flex gap-6">
-              <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                Política de Cookies
+              <a href="/politica-de-reserva" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                Política de Reserva
               </a>
-              <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                Termos de Serviço
+              <a href="/termos" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                Termos de Uso
               </a>
-              <a href="#" className="text-sm text-muted-foreground transition-colors hover:text-primary">
-                Mapa do Site
+              <a href="/faq" className="text-sm text-muted-foreground transition-colors hover:text-primary">
+                FAQ
               </a>
             </div>
           </div>

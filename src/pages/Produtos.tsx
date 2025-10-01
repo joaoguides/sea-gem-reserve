@@ -1,5 +1,5 @@
 // @ts-nocheck - Tables will be available after migration
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import Navigation from "@/components/Navigation";
@@ -18,6 +18,13 @@ const Produtos = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [sortBy, setSortBy] = useState<string>("featured");
+
+  // Get filters from URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("type")) setTypeFilter(params.get("type")!);
+    if (params.get("status")) setStatusFilter(params.get("status")!);
+  }, []);
 
   const { data: products, isLoading } = useQuery<Product[]>({
     // @ts-ignore - Types will be available after migration is executed
