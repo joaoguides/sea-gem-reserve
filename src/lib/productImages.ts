@@ -4,6 +4,7 @@ import ferretti850 from "@/assets/ferretti-850.jpg";
 import sunseekerPredator74 from "@/assets/sunseeker-predator-74.jpg";
 import princessV78 from "@/assets/princess-v78.jpg";
 import intermarine60 from "@/assets/intermarine-60.jpg";
+import axopar37 from "@/assets/axopar-37.jpg";
 import boat1 from "@/assets/boat-1.jpg";
 import boat2 from "@/assets/boat-2.jpg";
 import boat3 from "@/assets/boat-3.jpg";
@@ -16,6 +17,7 @@ export const productImageMap: Record<string, string> = {
   "sunseeker-predator-74.jpg": sunseekerPredator74,
   "princess-v78.jpg": princessV78,
   "intermarine-60.jpg": intermarine60,
+  "axopar-37.jpg": axopar37,
   "boat-1.jpg": boat1,
   "boat-2.jpg": boat2,
   "boat-3.jpg": boat3,

@@ -16,6 +16,7 @@ import { useState, useEffect } from "react";
 import ReservaModal from "@/components/ReservaModal";
 import type { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
+import { getProductImage } from "@/lib/productImages";
 
 type Product = Database['public']['Tables']['products']['Row'] & {
   product_images?: Database['public']['Tables']['product_images']['Row'][];
@@ -152,9 +153,10 @@ const Produto = () => {
             <div>
               <div className="relative rounded-lg overflow-hidden mb-4 aspect-[4/3]">
                 <img
-                  src={images[selectedImage]?.url || "/placeholder.svg"}
+                  src={getProductImage(images[selectedImage]?.url)}
                   alt={product.name}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                 />
                 {product.status === "novo" && (
                   <Badge className="absolute top-4 left-4 bg-accent">Novo</Badge>
@@ -174,9 +176,10 @@ const Produto = () => {
                     }`}
                   >
                     <img
-                      src={img.url}
+                      src={getProductImage(img.url)}
                       alt={`${product.name} ${idx + 1}`}
                       className="w-full h-full object-cover"
+                      loading="lazy"
                     />
                   </button>
                 ))}
