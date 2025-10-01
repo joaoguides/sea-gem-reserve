@@ -31,20 +31,17 @@ const Navigation = () => {
 
           {/* Desktop Menu */}
           <div className="hidden items-center gap-8 md:flex">
-            <a href="#modelos" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
-              Modelos
+            <a href="/" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
+              Home
+            </a>
+            <a href="/produtos" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
+              Catálogo
             </a>
             <a href="#seminovos" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
               Seminovos
             </a>
-            <a href="#acessorios" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
-              Acessórios
-            </a>
-            <a href="#servicos" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
-              Serviços
-            </a>
-            <a href="#contato" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
-              Contato
+            <a href="#sobre" className="text-sm font-medium text-foreground transition-colors hover:text-primary">
+              Sobre
             </a>
           </div>
 
@@ -53,7 +50,7 @@ const Navigation = () => {
             <Button variant="ghost" size="icon" className="text-foreground">
               <Search className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="text-foreground">
+            <Button variant="ghost" size="icon" className="text-foreground" onClick={() => window.location.href = '/login'}>
               <User className="h-5 w-5" />
             </Button>
             <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
@@ -77,20 +74,17 @@ const Navigation = () => {
         {isMenuOpen && (
           <div className="border-t border-border py-4 md:hidden">
             <div className="flex flex-col gap-4">
-              <a href="#modelos" className="text-sm font-medium text-foreground">
-                Modelos
+              <a href="/" className="text-sm font-medium text-foreground">
+                Home
+              </a>
+              <a href="/produtos" className="text-sm font-medium text-foreground">
+                Catálogo
               </a>
               <a href="#seminovos" className="text-sm font-medium text-foreground">
                 Seminovos
               </a>
-              <a href="#acessorios" className="text-sm font-medium text-foreground">
-                Acessórios
-              </a>
-              <a href="#servicos" className="text-sm font-medium text-foreground">
-                Serviços
-              </a>
-              <a href="#contato" className="text-sm font-medium text-foreground">
-                Contato
+              <a href="#sobre" className="text-sm font-medium text-foreground">
+                Sobre
               </a>
               <Button className="mt-2 w-full bg-accent text-accent-foreground hover:bg-accent/90">
                 <Phone className="mr-2 h-4 w-4" />

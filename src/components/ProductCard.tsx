@@ -1,21 +1,23 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Gauge, Heart, Ruler } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
   id: string;
   image: string;
   title: string;
-  price: string;
-  year: string;
+  price: number | string;
+  year: number | string;
   type: string;
-  length: string;
+  length: number | string;
   motorization: string;
   badge?: string;
   isNew?: boolean;
 }
 
 const ProductCard = ({
+  id,
   image,
   title,
   price,
@@ -26,6 +28,8 @@ const ProductCard = ({
   badge,
   isNew = false,
 }: ProductCardProps) => {
+  const navigate = useNavigate();
+  
   return (
     <div className="group relative overflow-hidden rounded-2xl bg-card shadow-luxury transition-all hover:shadow-luxury-xl">
       {/* Image Container */}
@@ -65,6 +69,7 @@ const ProductCard = ({
         {/* Quick View Button */}
         <Button
           variant="secondary"
+          onClick={() => navigate(`/produtos/${id}`)}
           className="absolute bottom-4 left-1/2 -translate-x-1/2 translate-y-4 bg-background text-foreground opacity-0 transition-all duration-300 group-hover:translate-y-0 group-hover:opacity-100"
         >
           Ver Detalhes
@@ -83,14 +88,16 @@ const ProductCard = ({
 
         {/* Specifications */}
         <div className="mb-4 grid grid-cols-3 gap-3">
-          <div className="flex items-center gap-1.5">
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">{year}</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <Ruler className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm text-muted-foreground">{length}</span>
-          </div>
+              <div className="flex items-center gap-1.5">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">{typeof year === 'number' ? year : year}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <Ruler className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {typeof length === 'number' ? `${length}m` : length}
+                </span>
+              </div>
           <div className="flex items-center gap-1.5">
             <Gauge className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm text-muted-foreground">{motorization}</span>
@@ -101,7 +108,9 @@ const ProductCard = ({
         <div className="flex items-center justify-between border-t border-border pt-4">
           <div>
             <p className="text-xs text-muted-foreground">A partir de</p>
-            <p className="text-2xl font-bold text-primary">{price}</p>
+            <p className="text-2xl font-bold text-primary">
+              {typeof price === 'number' ? `R$ ${price.toLocaleString('pt-BR')}` : price}
+            </p>
           </div>
           <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
             Reservar
