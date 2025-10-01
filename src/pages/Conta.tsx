@@ -1,4 +1,3 @@
-// @ts-nocheck - Tables will be available after migration
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +9,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { User, Package, Heart, FileText, LogOut } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import type { Reservation, Favorite } from "@/types/database";
+import type { Database } from "@/integrations/supabase/types";
+
+type Reservation = Database['public']['Tables']['reservations']['Row'] & {
+  products?: Database['public']['Tables']['products']['Row'];
+};
+
+type Favorite = Database['public']['Tables']['favorites']['Row'] & {
+  products?: Database['public']['Tables']['products']['Row'];
+};
 
 const Conta = () => {
   const navigate = useNavigate();
@@ -27,12 +34,10 @@ const Conta = () => {
     });
   }, [navigate]);
 
-  const { data: reservations } = useQuery<Reservation[]>({
-    // @ts-ignore - Types will be available after migration is executed
+  const { data: reservations } = useQuery({
     queryKey: ["reservations", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      // @ts-ignore
       const { data, error } = await supabase
         .from("reservations")
         .select(`
@@ -48,12 +53,10 @@ const Conta = () => {
     enabled: !!user?.id,
   });
 
-  const { data: favorites } = useQuery<Favorite[]>({
-    // @ts-ignore - Types will be available after migration is executed
+  const { data: favorites } = useQuery({
     queryKey: ["favorites", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
-      // @ts-ignore
       const { data, error } = await supabase
         .from("favorites")
         .select(`

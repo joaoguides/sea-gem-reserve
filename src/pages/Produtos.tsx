@@ -1,4 +1,3 @@
-// @ts-nocheck - Tables will be available after migration
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Filter, Grid, List } from "lucide-react";
-import type { Product } from "@/types/database";
+import type { Database } from "@/integrations/supabase/types";
 
 const Produtos = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
@@ -26,11 +25,14 @@ const Produtos = () => {
     if (params.get("status")) setStatusFilter(params.get("status")!);
   }, []);
 
+  type Product = Database['public']['Tables']['products']['Row'] & {
+    image?: string;
+    product_images?: Database['public']['Tables']['product_images']['Row'][];
+  };
+
   const { data: products, isLoading } = useQuery<Product[]>({
-    // @ts-ignore - Types will be available after migration is executed
     queryKey: ["products", typeFilter, statusFilter, priceRange, sortBy],
     queryFn: async () => {
-      // @ts-ignore
       let query = supabase
         .from("products")
         .select(`

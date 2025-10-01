@@ -1,4 +1,3 @@
-// @ts-nocheck - Tables will be available after migration
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,8 +14,13 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import ReservaModal from "@/components/ReservaModal";
-import type { Product } from "@/types/database";
+import type { Database } from "@/integrations/supabase/types";
 import { useToast } from "@/hooks/use-toast";
+
+type Product = Database['public']['Tables']['products']['Row'] & {
+  product_images?: Database['public']['Tables']['product_images']['Row'][];
+  product_features?: Database['public']['Tables']['product_features']['Row'][];
+};
 
 const Produto = () => {
   const { slug } = useParams();
@@ -32,17 +36,15 @@ const Produto = () => {
     });
   }, []);
 
-  const { data: product, isLoading } = useQuery<Product>({
-    // @ts-ignore - Types will be available after migration is executed
+  const { data: product, isLoading } = useQuery({
     queryKey: ["product", slug],
     queryFn: async () => {
-      // @ts-ignore
       const { data, error } = await supabase
         .from("products")
         .select(`
           *,
           product_images(url, sort),
-          product_features(group, label)
+          product_features(group_name, label)
         `)
         .eq("slug", slug)
         .single();

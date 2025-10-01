@@ -18,6 +18,7 @@ import PoliticaReserva from "./pages/PoliticaReserva";
 import Termos from "./pages/Termos";
 import FAQ from "./pages/FAQ";
 import NotFound from "./pages/NotFound";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/politica-de-reserva" element={<PoliticaReserva />} />
           <Route path="/termos" element={<Termos />} />
           <Route path="/faq" element={<FAQ />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

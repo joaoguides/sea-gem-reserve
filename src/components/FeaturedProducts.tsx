@@ -1,62 +1,49 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import ProductCard from "./ProductCard";
-import boat1 from "@/assets/boat-1.jpg";
-import boat2 from "@/assets/boat-2.jpg";
-import boat3 from "@/assets/boat-3.jpg";
-import boat4 from "@/assets/boat-4.jpg";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 
-const featuredBoats = [
-  {
-    id: "1",
-    image: boat1,
-    title: "Azimut Atlantis 43",
-    price: "R$ 2.450.000",
-    year: "2025",
-    type: "Lancha Esportiva",
-    length: "13.2m",
-    motorization: "2x 370HP",
-    badge: "Lançamento",
-    isNew: true,
-  },
-  {
-    id: "2",
-    image: boat2,
-    title: "Bavaria Cruiser 51",
-    price: "R$ 1.890.000",
-    year: "2024",
-    type: "Veleiro",
-    length: "15.5m",
-    motorization: "1x 75HP",
-    isNew: true,
-  },
-  {
-    id: "3",
-    image: boat3,
-    title: "Sea-Doo RXP-X 300",
-    price: "R$ 89.900",
-    year: "2025",
-    type: "Jet Ski",
-    length: "3.5m",
-    motorization: "300HP",
-    badge: "Best-Seller",
-    isNew: true,
-  },
-  {
-    id: "4",
-    image: boat4,
-    title: "Ferretti Yachts 450",
-    price: "R$ 3.200.000",
-    year: "2024",
-    type: "Iate",
-    length: "13.8m",
-    motorization: "2x 435HP",
-    badge: "Promoção",
-    isNew: false,
-  },
-];
-
 const FeaturedProducts = () => {
+  const { data: products, isLoading } = useQuery({
+    queryKey: ["featured-products"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("products")
+        .select(`
+          *,
+          product_images(url, sort)
+        `)
+        .eq("featured", true)
+        .order("created_at", { ascending: false })
+        .limit(4);
+
+      if (error) throw error;
+      
+      return data.map((product: any) => ({
+        ...product,
+        image: product.product_images?.[0]?.url || "/placeholder.svg",
+      }));
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <section className="py-24 bg-gradient-to-b from-background to-secondary/20">
+        <div className="container mx-auto px-4">
+          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-muted rounded-lg h-64 mb-4" />
+                <div className="bg-muted rounded h-4 w-3/4 mb-2" />
+                <div className="bg-muted rounded h-4 w-1/2" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
   return (
     <section className="py-24 bg-gradient-to-b from-background to-secondary/20">
       <div className="container mx-auto px-4">
@@ -77,14 +64,26 @@ const FeaturedProducts = () => {
 
         {/* Products Grid */}
         <div className="mb-12 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-          {featuredBoats.map((boat) => (
-            <ProductCard key={boat.id} {...boat} />
+          {products?.map((product: any) => (
+            <ProductCard
+              key={product.id}
+              id={product.id}
+              image={product.image}
+              title={product.name}
+              price={product.price}
+              year={product.year}
+              type={product.type}
+              length={product.length_m}
+              motorization={product.engine}
+              badge={product.status === "novo" ? "Novo" : "Seminovo"}
+              isNew={product.status === "novo"}
+            />
           ))}
         </div>
 
         {/* View All Button */}
         <div className="text-center">
-          <Button size="lg" variant="outline" className="group">
+          <Button size="lg" variant="outline" className="group" onClick={() => window.location.href = '/produtos'}>
             Ver Todos os Modelos
             <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
           </Button>
