@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
@@ -7,10 +6,18 @@ import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import type { Database } from "@/integrations/supabase/types";
+import type { User } from "@supabase/supabase-js";
+
+type Favorite = Database['public']['Tables']['favorites']['Row'] & {
+  products: Database['public']['Tables']['products']['Row'] & {
+    product_images: Database['public']['Tables']['product_images']['Row'][];
+  };
+};
 
 const Favoritos = () => {
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -22,7 +29,7 @@ const Favoritos = () => {
     });
   }, [navigate]);
 
-  const { data: favorites, isLoading } = useQuery({
+  const { data: favorites, isLoading } = useQuery<Favorite[]>({
     queryKey: ["favorites", user?.id],
     queryFn: async () => {
       if (!user?.id) return [];
@@ -41,7 +48,7 @@ const Favoritos = () => {
         .eq("user_id", user.id);
 
       if (error) throw error;
-      return data;
+      return data as Favorite[];
     },
     enabled: !!user?.id,
   });
@@ -68,18 +75,19 @@ const Favoritos = () => {
             </div>
           ) : favorites && favorites.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {favorites.map((fav: any) => (
+              {favorites.map((fav) => (
                 <Card key={fav.id}>
                   <CardContent className="p-0">
                     <img
                       src={fav.products.product_images?.[0]?.url || "/placeholder.svg"}
                       alt={fav.products.name}
                       className="w-full h-48 object-cover rounded-t-lg"
+                      loading="lazy"
                     />
                     <div className="p-6">
                       <h3 className="font-semibold mb-2">{fav.products.name}</h3>
                       <p className="text-2xl font-bold text-primary mb-4">
-                        R$ {fav.products.price.toLocaleString("pt-BR")}
+                        R$ {Number(fav.products.price).toLocaleString("pt-BR")}
                       </p>
                       <Button
                         className="w-full"

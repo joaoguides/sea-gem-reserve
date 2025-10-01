@@ -7,9 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { CreditCard, QrCode } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import type { Database } from "@/integrations/supabase/types";
+
+type Product = Database['public']['Tables']['products']['Row'];
 
 interface ReservaModalProps {
-  product: any;
+  product: Product;
   onClose: () => void;
 }
 
@@ -20,13 +23,13 @@ const ReservaModal = ({ product, onClose }: ReservaModalProps) => {
   const [paymentMethod, setPaymentMethod] = useState<"pix" | "card">("pix");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  const depositFixed = product.deposit_fixed_amount || 2000;
-  const depositPercent = product.deposit_percent || 0.02;
-  const minDeposit = product.min_deposit_amount || 1000;
+  const depositFixed = Number(product.deposit_fixed_amount || 2000);
+  const depositPercent = Number(product.deposit_percent || 0.02);
+  const minDeposit = Number(product.min_deposit_amount || 1000);
 
   const calculatedAmount = mode === "fixed" 
     ? depositFixed 
-    : Math.max(product.price * depositPercent, minDeposit);
+    : Math.max(Number(product.price) * depositPercent, minDeposit);
 
   const handleReserve = () => {
     if (!acceptedTerms) {
@@ -91,7 +94,7 @@ const ReservaModal = ({ product, onClose }: ReservaModalProps) => {
                   <Label htmlFor="percent" className="flex-1 cursor-pointer">
                     <div className="font-medium">Percentual</div>
                     <div className="text-sm text-muted-foreground">
-                      {(depositPercent * 100).toFixed(0)}% = R$ {(product.price * depositPercent).toLocaleString('pt-BR')}
+                      {(depositPercent * 100).toFixed(0)}% = R$ {(Number(product.price) * depositPercent).toLocaleString('pt-BR')}
                     </div>
                   </Label>
                 </div>
