@@ -10,6 +10,7 @@ import { ShoppingCart, Search } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import type { Database } from "@/integrations/supabase/types";
+import { useDebounce } from "@/hooks/useDebounce";
 
 type Accessory = Database['public']['Tables']['accessories']['Row'];
 
@@ -18,13 +19,22 @@ const Acessorios = () => {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("name");
 
+  // Debounce search to avoid excessive queries
+  const debouncedSearch = useDebounce(search, 300);
+
   const { data: accessories, isLoading } = useQuery<Accessory[]>({
-    queryKey: ["accessories", search, sortBy],
+    queryKey: ["accessories", debouncedSearch, sortBy],
     queryFn: async () => {
+      console.log("🔍 [Acessórios] Query Params:", {
+        search: debouncedSearch,
+        sortBy,
+        timestamp: new Date().toISOString()
+      });
+
       let query = supabase.from("accessories").select("*");
 
-      if (search) {
-        query = query.ilike("name", `%${search}%`);
+      if (debouncedSearch) {
+        query = query.ilike("name", `%${debouncedSearch}%`);
       }
 
       switch (sortBy) {
@@ -39,7 +49,23 @@ const Acessorios = () => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      
+      console.log("✅ [Acessórios] Supabase Response:", {
+        count: data?.length || 0,
+        error: error?.message,
+        sample: data?.[0],
+        timestamp: new Date().toISOString()
+      });
+
+      if (error) {
+        console.error("❌ [Acessórios] Query Error:", error);
+        toast({
+          title: "Erro ao carregar acessórios",
+          description: error.message || "Tente novamente mais tarde",
+          variant: "destructive",
+        });
+        throw error;
+      }
       return data || [];
     },
   });

@@ -10,13 +10,19 @@ import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
 import { Filter, Grid, List } from "lucide-react";
 import type { Database } from "@/integrations/supabase/types";
+import { useDebounce } from "@/hooks/useDebounce";
+import { useToast } from "@/hooks/use-toast";
 
 const Produtos = () => {
+  const { toast } = useToast();
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 1000000]);
   const [sortBy, setSortBy] = useState<string>("featured");
+
+  // Debounce price range to avoid excessive queries
+  const debouncedPriceRange = useDebounce(priceRange, 500);
 
   // Get filters from URL
   useEffect(() => {
@@ -25,22 +31,41 @@ const Produtos = () => {
     if (params.get("status")) setStatusFilter(params.get("status")!);
   }, []);
 
+  // Log filter changes
+  useEffect(() => {
+    console.log("🎚️ [Produtos] Filtros alterados:", {
+      typeFilter,
+      statusFilter,
+      priceRange,
+      debouncedPriceRange,
+      sortBy
+    });
+  }, [typeFilter, statusFilter, priceRange, debouncedPriceRange, sortBy]);
+
   type Product = Database['public']['Tables']['products']['Row'] & {
     image?: string;
     product_images?: Database['public']['Tables']['product_images']['Row'][];
   };
 
   const { data: products, isLoading } = useQuery<Product[]>({
-    queryKey: ["products", typeFilter, statusFilter, priceRange, sortBy],
+    queryKey: ["products", typeFilter, statusFilter, `${debouncedPriceRange[0]}-${debouncedPriceRange[1]}`, sortBy],
     queryFn: async () => {
+      console.log("🔍 [Produtos] Query Params:", {
+        typeFilter,
+        statusFilter,
+        priceRange: debouncedPriceRange,
+        sortBy,
+        timestamp: new Date().toISOString()
+      });
+
       let query = supabase
         .from("products")
         .select(`
           *,
           product_images(url, sort)
         `)
-        .gte("price", priceRange[0])
-        .lte("price", priceRange[1]);
+        .gte("price", debouncedPriceRange[0])
+        .lte("price", debouncedPriceRange[1]);
 
       if (typeFilter !== "all") {
         query = query.eq("type", typeFilter);
@@ -67,7 +92,23 @@ const Produtos = () => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
+      
+      console.log("✅ [Produtos] Supabase Response:", {
+        count: data?.length || 0,
+        error: error?.message,
+        sample: data?.[0],
+        timestamp: new Date().toISOString()
+      });
+
+      if (error) {
+        console.error("❌ [Produtos] Query Error:", error);
+        toast({
+          title: "Erro ao carregar produtos",
+          description: error.message || "Tente novamente mais tarde",
+          variant: "destructive",
+        });
+        throw error;
+      }
       
       return data.map((product: any) => ({
         ...product,
