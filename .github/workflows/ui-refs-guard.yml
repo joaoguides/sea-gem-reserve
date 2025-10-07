@@ -22,7 +22,7 @@ jobs:
         run: npm ci
 
       - name: Generate refs on PR HEAD
-        run: npm run check:ui-refs
+        run: node scripts/check-ui-refs.mjs
 
       - name: Save HEAD refs
         run: cp ui-refs.json ui-refs.head.json || true
