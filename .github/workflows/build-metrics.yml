@@ -1,0 +1,36 @@
+name: Build & Metrics
+
+on:
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build project
+        run: npm run build
+      
+      - name: Summarize dist
+        run: |
+          echo "## dist size summary" >> $GITHUB_STEP_SUMMARY
+          du -sh dist >> $GITHUB_STEP_SUMMARY || true
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Top 30 files (KB)" >> $GITHUB_STEP_SUMMARY
+          find dist -type f -printf "%k KB\t%p\n" | sort -nr | head -n 30 >> $GITHUB_STEP_SUMMARY || true
+      
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
