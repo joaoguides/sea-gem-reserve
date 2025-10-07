@@ -1,0 +1,92 @@
+name: UI Refs Guard
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout PR (full history)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Generate refs on PR HEAD
+        run: npm run check:ui-refs
+
+      - name: Save HEAD refs
+        run: cp ui-refs.json ui-refs.head.json || true
+
+      - name: Detect removed UI files in PR
+        id: diff
+        run: |
+          git fetch origin ${{ github.base_ref }} --depth=1
+          git diff --name-status origin/${{ github.base_ref }}... | awk '/^D/ && $2 ~ /^src\/components\/ui\/.*\.tsx$/{print $2}' > removed-ui.txt || true
+          echo "removed=$(paste -sd, removed-ui.txt || true)" >> $GITHUB_OUTPUT
+          echo "Removed UI files:"
+          cat removed-ui.txt || true
+
+      - name: Generate refs on BASE branch
+        run: |
+          git checkout --progress --force origin/${{ github.base_ref }}
+          # No install needed for this script (uses only Node built-ins)
+          node scripts/check-ui-refs.mjs || true
+          cp ui-refs.json ui-refs.base.json || true
+
+      - name: Compare and enforce policy
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const path = require('path');
+
+          const removed = fs.existsSync('removed-ui.txt')
+            ? fs.readFileSync('removed-ui.txt','utf8').trim().split('\n').filter(Boolean)
+            : [];
+          // convert paths to module names ("src/components/ui/badge.tsx" -> "badge")
+          const removedMods = removed.map(p => p.replace(/^src[\/\\]components[\/\\]ui[\/\\]/,'').replace(/\.tsx?$/,''));
+
+          if (!fs.existsSync('ui-refs.base.json')) {
+            console.log('No base refs found; skipping base comparison.');
+          }
+          const base = fs.existsSync('ui-refs.base.json')
+            ? JSON.parse(fs.readFileSync('ui-refs.base.json','utf8'))
+            : { used: [] };
+
+          const baseUsed = new Set((base.used || []).filter(r => r.count >= 1).map(r => r.module));
+
+          // If PR removes modules that were used on BASE, block unless title contains allow-ui-removal
+          const blocked = removedMods.filter(m => baseUsed.has(m));
+          const title = process.env.PR_TITLE || '';
+          const bypass = /\ballow-ui-removal\b/i.test(title);
+
+          if (blocked.length && !bypass) {
+            console.error('❌ UI Guard: This PR removes UI modules that are used on BASE:', blocked);
+            console.error('Add "allow-ui-removal" to the PR title ONLY if you removed all usages in this PR intentionally.');
+            process.exit(1);
+          } else {
+            console.log('✅ UI Guard: no blocked removals detected.', { blocked, bypass });
+          }
+          NODE
+
+      - name: Upload guard artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-refs-guard
+          path: |
+            ui-refs.json
+            ui-refs.head.json
+            ui-refs.base.json
+            removed-ui.txt
